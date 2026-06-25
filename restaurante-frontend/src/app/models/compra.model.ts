@@ -14,4 +14,5 @@ export interface CompraHistorico {
   valorTotal: number;
   usuarioId: number;
   usuarioNome: string;
+  dataCompra: string;
 }

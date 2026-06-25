@@ -1,6 +1,7 @@
 package com.restaurante.compras.controller;
 
 import com.restaurante.compras.dto.AuthValidationResponse;
+import com.restaurante.compras.dto.CompraRequest;
 import com.restaurante.compras.model.Compra;
 import com.restaurante.compras.repository.CompraRepository;
 import com.restaurante.compras.service.AuthValidationService;
@@ -48,10 +49,15 @@ public class CompraController {
     @ResponseStatus(HttpStatus.CREATED)
     public Compra criar(
             @RequestHeader(name = "Authorization", required = false) String authorization,
-            @Valid @RequestBody Compra compra
+            @Valid @RequestBody CompraRequest request
     ) {
         AuthValidationResponse usuario = authValidationService.validate(authorization);
+        Compra compra = new Compra();
         compra.setId(null);
+        compra.setPratoId(request.pratoId());
+        compra.setPratoNome(request.pratoNome());
+        compra.setQuantidade(request.quantidade());
+        compra.setPrecoUnitario(request.precoUnitario());
         compra.setUsuarioId(usuario.id());
         compra.setUsuarioNome(usuario.nome());
         compra.setValorTotal(compra.getPrecoUnitario().multiply(BigDecimal.valueOf(compra.getQuantidade())));

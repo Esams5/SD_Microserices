@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { catchError, Observable, throwError } from 'rxjs';
 import { CompraHistorico, CompraRequest } from '../models/compra.model';
 
 @Injectable({
@@ -15,7 +15,9 @@ export class ComprasService {
       headers: new HttpHeaders({
         Authorization: `Bearer ${token}`
       })
-    });
+    }).pipe(
+      catchError((error) => throwError(() => error))
+    );
   }
 
   listarMinhas(token: string): Observable<CompraHistorico[]> {

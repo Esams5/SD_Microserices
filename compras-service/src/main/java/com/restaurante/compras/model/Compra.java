@@ -5,13 +5,11 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.DecimalMin;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "compras")
@@ -21,31 +19,24 @@ public class Compra {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @NotNull
     private Long pratoId;
 
-    @NotBlank
     private String pratoNome;
 
-    @NotNull
-    @Min(1)
     private Integer quantidade;
 
-    @NotNull
-    @DecimalMin("0.0")
     @Column(precision = 10, scale = 2)
     private BigDecimal precoUnitario;
 
-    @NotNull
-    @DecimalMin("0.0")
     @Column(precision = 10, scale = 2)
     private BigDecimal valorTotal;
 
-    @NotNull
     private Long usuarioId;
 
-    @NotBlank
     private String usuarioNome;
+
+    @Column(nullable = false)
+    private LocalDateTime dataCompra;
 
     public Long getId() {
         return id;
@@ -110,5 +101,19 @@ public class Compra {
     public void setUsuarioNome(String usuarioNome) {
         this.usuarioNome = usuarioNome;
     }
-}
 
+    public LocalDateTime getDataCompra() {
+        return dataCompra;
+    }
+
+    public void setDataCompra(LocalDateTime dataCompra) {
+        this.dataCompra = dataCompra;
+    }
+
+    @PrePersist
+    public void prePersist() {
+        if (dataCompra == null) {
+            dataCompra = LocalDateTime.now();
+        }
+    }
+}
