@@ -61,7 +61,7 @@ Isso evita acoplamento entre os dados dos servicos. Se `auth-service` cair, o ca
 ## Roteiro da demonstracao
 
 1. Suba o backend com `docker-compose up -d --build`.
-2. Rode o frontend com `ng serve`.
+2. Rode o frontend com `ng start`.
 3. Faça login com o usuario base:
 
 ```text
