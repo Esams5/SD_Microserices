@@ -1,0 +1,253 @@
+:host {
+  color: #1f2937;
+  display: block;
+  font-family: "Segoe UI", sans-serif;
+}
+
+.page-shell {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at top left, rgba(255, 204, 153, 0.4), transparent 28%),
+    linear-gradient(180deg, #fff8ef 0%, #f6efe5 100%);
+  padding: 32px 20px 48px;
+}
+
+.hero,
+.panel,
+.notice-bar {
+  max-width: 1100px;
+  margin: 0 auto 20px;
+}
+
+.hero {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  align-items: flex-start;
+  color: #4a2d18;
+}
+
+.hero-copy-block {
+  max-width: 720px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.hero-auth {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.session-pill {
+  background: rgba(124, 45, 18, 0.08);
+  color: #7c2d12;
+  padding: 12px 16px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.eyebrow {
+  letter-spacing: 0.18em;
+  margin: 0 0 10px;
+  text-transform: uppercase;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin-top: 0;
+}
+
+h1 {
+  font-size: clamp(2.2rem, 4vw, 4.2rem);
+  margin-bottom: 12px;
+}
+
+.hero-copy {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  margin-bottom: 0;
+}
+
+.panel {
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(148, 96, 54, 0.14);
+  border-radius: 24px;
+  box-shadow: 0 20px 60px rgba(94, 54, 25, 0.08);
+  padding: 24px;
+  backdrop-filter: blur(12px);
+}
+
+.modal-panel {
+  max-width: 620px;
+}
+
+.panel-header {
+  display: flex;
+  gap: 16px;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 20px;
+}
+
+.single-form {
+  display: grid;
+  gap: 16px;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-weight: 600;
+}
+
+input,
+textarea {
+  width: 100%;
+  border: 1px solid #d4c2b4;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font: inherit;
+  background: #fffdf9;
+  box-sizing: border-box;
+}
+
+input:focus,
+textarea:focus {
+  border-color: #d97706;
+  outline: 3px solid rgba(217, 119, 6, 0.15);
+}
+
+small {
+  color: #b45309;
+}
+
+.form-actions,
+.card-actions {
+  display: flex;
+  gap: 12px;
+}
+
+button {
+  border: none;
+  border-radius: 999px;
+  padding: 12px 18px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  background: #a34212;
+  color: #ffffff;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+button:hover {
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
+.ghost-button {
+  background: #f6e4d3;
+  color: #7c2d12;
+}
+
+.primary-button {
+  background: #a34212;
+  color: #ffffff;
+}
+
+.danger {
+  background: #b91c1c;
+}
+
+.notice-bar {
+  border-radius: 18px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(148, 96, 54, 0.14);
+}
+
+.notice-bar.success {
+  color: #166534;
+}
+
+.notice-bar.error {
+  color: #b91c1c;
+}
+
+.feedback {
+  margin: 18px 0 0;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 18px;
+}
+
+.prato-card {
+  border-radius: 22px;
+  padding: 20px;
+  background: linear-gradient(180deg, #fffdfa 0%, #fff4e8 100%);
+  border: 1px solid rgba(168, 85, 247, 0.04);
+  box-shadow: 0 12px 28px rgba(102, 65, 37, 0.08);
+}
+
+.card-top {
+  display: flex;
+  gap: 12px;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-top strong {
+  color: #7c2d12;
+  white-space: nowrap;
+}
+
+.rating-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+}
+
+.rating-row.warning {
+  background: rgba(245, 158, 11, 0.18);
+  color: #92400e;
+}
+
+@media (max-width: 720px) {
+  .hero,
+  .hero-actions,
+  .hero-auth,
+  .panel-header,
+  .card-top,
+  .rating-row,
+  .form-actions,
+  .card-actions {
+    flex-direction: column;
+  }
+
+  .panel {
+    padding: 18px;
+  }
+}

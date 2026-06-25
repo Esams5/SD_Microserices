@@ -1,0 +1,159 @@
+<main class="page-shell">
+  <section class="hero">
+    <div class="hero-copy-block">
+      <p class="eyebrow">Sistema Distribuido</p>
+      <h1>Cardapio Digital</h1>
+      <p class="hero-copy">
+        O cardapio e publico. Login, cadastro e gerenciamento de pratos podem falhar sem derrubar
+        a visualizacao principal.
+      </p>
+    </div>
+
+    <div class="hero-actions">
+      <div class="hero-auth" *ngIf="usuario; else authButtons">
+        <span class="session-pill">Logado como {{ usuario.nome }}</span>
+        <button type="button" class="ghost-button" (click)="logout()">Sair</button>
+      </div>
+
+      <ng-template #authButtons>
+        <button type="button" class="ghost-button" (click)="abrirPainel('login')">Login</button>
+        <button type="button" class="ghost-button" (click)="abrirPainel('cadastro')">Cadastro</button>
+      </ng-template>
+
+      <button
+        type="button"
+        class="primary-button"
+        (click)="abrirPainel('prato')"
+        [disabled]="!gerenciamentoDisponivel">
+        Novo prato
+      </button>
+    </div>
+  </section>
+
+  <section class="notice-bar" *ngIf="!authDisponivel">
+    Login/cadastro indisponiveis. O cardapio continua acessivel normalmente.
+  </section>
+
+  <section class="notice-bar success" *ngIf="authMensagem">{{ authMensagem }}</section>
+  <section class="notice-bar error" *ngIf="authErro">{{ authErro }}</section>
+  <section class="notice-bar success" *ngIf="mensagem">{{ mensagem }}</section>
+  <section class="notice-bar error" *ngIf="erro">{{ erro }}</section>
+
+  <section class="panel modal-panel" *ngIf="painelAberto">
+    <div class="panel-header">
+      <div>
+        <h2 *ngIf="painelAberto === 'login'">Login</h2>
+        <h2 *ngIf="painelAberto === 'cadastro'">Cadastro</h2>
+        <h2 *ngIf="painelAberto === 'prato'">{{ editandoId ? 'Editar prato' : 'Novo prato' }}</h2>
+        <p *ngIf="painelAberto === 'login'">Use o usuario base ou entre com sua conta.</p>
+        <p *ngIf="painelAberto === 'cadastro'">Crie uma conta para liberar o gerenciamento.</p>
+        <p *ngIf="painelAberto === 'prato'">Somente usuarios logados podem gerenciar pratos.</p>
+      </div>
+      <button type="button" class="ghost-button" (click)="fecharPainel()">Fechar</button>
+    </div>
+
+    <form *ngIf="painelAberto === 'login'" [formGroup]="loginForm" (ngSubmit)="login()" class="single-form">
+      <label>
+        <span>E-mail</span>
+        <input type="email" formControlName="email" placeholder="admin@restaurante.com" />
+        <small *ngIf="campoLoginInvalido('email')">Informe um e-mail valido.</small>
+      </label>
+
+      <label>
+        <span>Senha</span>
+        <input type="password" formControlName="senha" placeholder="1234" />
+        <small *ngIf="campoLoginInvalido('senha')">Informe a senha.</small>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="autenticando || !authDisponivel">Entrar</button>
+      </div>
+    </form>
+
+    <form *ngIf="painelAberto === 'cadastro'" [formGroup]="cadastroForm" (ngSubmit)="cadastrar()" class="single-form">
+      <label>
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Seu nome" />
+        <small *ngIf="campoCadastroInvalido('nome')">Informe um nome valido.</small>
+      </label>
+
+      <label>
+        <span>E-mail</span>
+        <input type="email" formControlName="email" placeholder="voce@email.com" />
+        <small *ngIf="campoCadastroInvalido('email')">Informe um e-mail valido.</small>
+      </label>
+
+      <label>
+        <span>Senha</span>
+        <input type="password" formControlName="senha" placeholder="Minimo 4 caracteres" />
+        <small *ngIf="campoCadastroInvalido('senha')">Informe uma senha com 4+ caracteres.</small>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="autenticando || !authDisponivel">Cadastrar</button>
+      </div>
+    </form>
+
+    <form *ngIf="painelAberto === 'prato'" [formGroup]="pratoForm" (ngSubmit)="salvar()" class="single-form">
+      <label>
+        <span>Nome</span>
+        <input type="text" formControlName="nome" placeholder="Ex.: File a parmegiana" />
+        <small *ngIf="campoInvalido('nome')">Informe um nome valido.</small>
+      </label>
+
+      <label>
+        <span>Preco</span>
+        <input type="number" step="0.01" formControlName="preco" placeholder="39.90" />
+        <small *ngIf="campoInvalido('preco')">Informe um preco maior que zero.</small>
+      </label>
+
+      <label>
+        <span>Descricao</span>
+        <textarea rows="3" formControlName="descricao" placeholder="Descreva o prato"></textarea>
+        <small *ngIf="campoInvalido('descricao')">Informe uma descricao valida.</small>
+      </label>
+
+      <div class="form-actions">
+        <button type="submit" [disabled]="salvando">
+          {{ salvando ? 'Salvando...' : (editandoId ? 'Atualizar prato' : 'Adicionar prato') }}
+        </button>
+      </div>
+    </form>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Cardapio</h2>
+        <p>Visualizacao publica do cardapio principal.</p>
+      </div>
+      <button type="button" class="ghost-button" (click)="carregarPratos()">Atualizar lista</button>
+    </div>
+
+    <p *ngIf="carregando" class="feedback">Carregando cardapio...</p>
+
+    <div class="cards" *ngIf="!carregando">
+      <article class="prato-card" *ngFor="let prato of pratos">
+        <div class="card-top">
+          <div>
+            <h3>{{ prato.nome }}</h3>
+            <p>{{ prato.descricao }}</p>
+          </div>
+          <strong>{{ prato.preco | currency:'BRL':'symbol':'1.2-2' }}</strong>
+        </div>
+
+        <div class="rating-row" [class.warning]="!prato.avaliacaoDisponivel">
+          <span>Avaliacao:</span>
+          <strong>{{ prato.avaliacaoTexto }}</strong>
+        </div>
+
+        <div class="card-actions" *ngIf="gerenciamentoDisponivel">
+          <button type="button" (click)="editar(prato)">Editar</button>
+          <button type="button" class="danger" (click)="excluir(prato)">Excluir</button>
+        </div>
+      </article>
+    </div>
+
+    <p *ngIf="!carregando && pratos.length === 0" class="feedback">Nenhum prato cadastrado.</p>
+  </section>
+</main>

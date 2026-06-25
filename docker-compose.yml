@@ -1,0 +1,54 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres-cardapio
+    environment:
+      POSTGRES_DB: cardapio_db
+      POSTGRES_USER: cardapio_user
+      POSTGRES_PASSWORD: cardapio_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cardapio_user -d cardapio_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  cardapio-service:
+    build:
+      context: ./cardapio-service
+    container_name: cardapio-service
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/cardapio_db
+      SPRING_DATASOURCE_USERNAME: cardapio_user
+      SPRING_DATASOURCE_PASSWORD: cardapio_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      SERVER_PORT: 8081
+    ports:
+      - "8081:8081"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  avaliacoes-service:
+    build:
+      context: ./avaliacoes-service
+    container_name: avaliacoes-service
+    environment:
+      SERVER_PORT: 8082
+    ports:
+      - "8082:8082"
+
+  auth-service:
+    build:
+      context: ./auth-service
+    container_name: auth-service
+    environment:
+      SERVER_PORT: 8083
+    ports:
+      - "8083:8083"
+
+volumes:
+  postgres_data:
