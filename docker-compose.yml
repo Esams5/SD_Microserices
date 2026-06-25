@@ -50,6 +50,23 @@ services:
       timeout: 5s
       retries: 10
 
+  postgres-compras:
+    image: postgres:16-alpine
+    container_name: postgres-compras
+    environment:
+      POSTGRES_DB: compras_db
+      POSTGRES_USER: compras_user
+      POSTGRES_PASSWORD: compras_pass
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_compras_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U compras_user -d compras_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   cardapio-service:
     build:
       context: ./cardapio-service
@@ -101,7 +118,27 @@ services:
       postgres-auth:
         condition: service_healthy
 
+  compras-service:
+    build:
+      context: ./compras-service
+    container_name: compras-service
+    environment:
+      SERVER_PORT: 8084
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres-compras:5432/compras_db
+      SPRING_DATASOURCE_USERNAME: compras_user
+      SPRING_DATASOURCE_PASSWORD: compras_pass
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      AUTH_SERVICE_URL: http://auth-service:8083/api/auth
+    ports:
+      - "8084:8084"
+    depends_on:
+      postgres-compras:
+        condition: service_healthy
+      auth-service:
+        condition: service_started
+
 volumes:
   postgres_cardapio_data:
   postgres_avaliacoes_data:
   postgres_auth_data:
+  postgres_compras_data:

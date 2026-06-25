@@ -2,13 +2,16 @@ import { CommonModule } from '@angular/common';
 import { Component, inject } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { finalize } from 'rxjs';
+import { Avaliacao } from './models/avaliacao.model';
 import { UsuarioAutenticado } from './models/auth.model';
+import { CompraHistorico, CompraRequest } from './models/compra.model';
 import { Prato, PratoView } from './models/prato.model';
 import { AuthService } from './services/auth.service';
 import { AvaliacoesService } from './services/avaliacoes.service';
 import { CardapioService } from './services/cardapio.service';
+import { ComprasService } from './services/compras.service';
 
-type PainelAberto = 'login' | 'cadastro' | 'prato' | null;
+type PainelAberto = 'login' | 'cadastro' | 'prato' | 'historico' | null;
 
 @Component({
   selector: 'app-root',
@@ -22,19 +25,26 @@ export class AppComponent {
   private readonly cardapioService = inject(CardapioService);
   private readonly avaliacoesService = inject(AvaliacoesService);
   private readonly authService = inject(AuthService);
+  private readonly comprasService = inject(ComprasService);
 
   pratos: PratoView[] = [];
   carregando = false;
   salvando = false;
   autenticando = false;
+  enviandoAvaliacao = false;
+  enviandoCompra = false;
   editandoId: number | null = null;
+  pratoEmAvaliacaoId: number | null = null;
+  pratoEmCompraId: number | null = null;
   painelAberto: PainelAberto = null;
+  carregandoHistorico = false;
   mensagem = '';
   erro = '';
   authMensagem = '';
   authErro = '';
   authDisponivel = true;
   usuario: UsuarioAutenticado | null = this.authService.usuarioAtual();
+  historicoCompras: CompraHistorico[] = [];
 
   readonly pratoForm = this.fb.nonNullable.group({
     nome: ['', [Validators.required, Validators.minLength(2)]],
@@ -51,6 +61,15 @@ export class AppComponent {
     nome: ['', [Validators.required, Validators.minLength(2)]],
     email: ['', [Validators.required, Validators.email]],
     senha: ['', [Validators.required, Validators.minLength(4)]]
+  });
+
+  readonly avaliacaoForm = this.fb.nonNullable.group({
+    nota: [5, [Validators.required, Validators.min(1), Validators.max(5)]],
+    comentario: ['', [Validators.required, Validators.minLength(3)]]
+  });
+
+  readonly compraForm = this.fb.nonNullable.group({
+    quantidade: [1, [Validators.required, Validators.min(1)]]
   });
 
   constructor() {
@@ -108,6 +127,10 @@ export class AppComponent {
         prato.avaliacaoTexto = resumo.texto;
         prato.avaliacaoDisponivel = resumo.disponivel;
       });
+
+      this.avaliacoesService.listarPorPrato(prato.id).subscribe((avaliacoes) => {
+        prato.avaliacoes = avaliacoes;
+      });
     });
   }
 
@@ -124,11 +147,22 @@ export class AppComponent {
       return;
     }
 
+    if (painel === 'historico' && !this.gerenciamentoDisponivel) {
+      this.authErro = this.authDisponivel
+        ? 'Faca login para ver o historico de compras.'
+        : 'Servico de login/cadastro indisponivel.';
+      return;
+    }
+
     this.mensagem = '';
     this.erro = '';
     this.authMensagem = '';
     this.authErro = '';
     this.painelAberto = painel;
+
+    if (painel === 'historico') {
+      this.carregarHistoricoCompras();
+    }
   }
 
   fecharPainel(): void {
@@ -264,9 +298,129 @@ export class AppComponent {
   logout(): void {
     this.authService.logout();
     this.usuario = null;
+    this.pratoEmAvaliacaoId = null;
+    this.pratoEmCompraId = null;
+    this.historicoCompras = [];
     this.painelAberto = null;
     this.cancelarEdicao();
     this.authMensagem = 'Sessao encerrada.';
+  }
+
+  abrirAvaliacao(pratoId: number | undefined): void {
+    if (!pratoId || !this.usuario) {
+      return;
+    }
+
+    this.pratoEmAvaliacaoId = this.pratoEmAvaliacaoId === pratoId ? null : pratoId;
+    this.avaliacaoForm.reset({
+      nota: 5,
+      comentario: ''
+    });
+    this.mensagem = '';
+    this.erro = '';
+  }
+
+  abrirCompra(pratoId: number | undefined): void {
+    if (!pratoId || !this.usuario) {
+      return;
+    }
+
+    this.pratoEmCompraId = this.pratoEmCompraId === pratoId ? null : pratoId;
+    this.compraForm.reset({
+      quantidade: 1
+    });
+    this.mensagem = '';
+    this.erro = '';
+  }
+
+  comprar(prato: PratoView): void {
+    if (!prato.id) {
+      return;
+    }
+
+    const token = this.authService.tokenAtual();
+    if (!this.usuario || !token) {
+      this.authErro = 'Faca login para comprar.';
+      return;
+    }
+
+    if (this.compraForm.invalid) {
+      this.compraForm.markAllAsTouched();
+      return;
+    }
+
+    const payload: CompraRequest = {
+      pratoId: prato.id,
+      pratoNome: prato.nome,
+      quantidade: this.compraForm.getRawValue().quantidade,
+      precoUnitario: prato.preco
+    };
+
+    this.enviandoCompra = true;
+    this.mensagem = '';
+    this.erro = '';
+
+    this.comprasService
+      .criar(payload, token)
+      .pipe(finalize(() => (this.enviandoCompra = false)))
+      .subscribe({
+        next: () => {
+          this.mensagem = 'Comprado.';
+          this.pratoEmCompraId = null;
+          this.compraForm.reset({
+            quantidade: 1
+          });
+        },
+        error: () => {
+          this.erro = 'Nao foi possivel registrar a compra.';
+        }
+      });
+  }
+
+  enviarAvaliacao(prato: PratoView): void {
+    if (!prato.id) {
+      return;
+    }
+
+    const token = this.authService.tokenAtual();
+    if (!this.usuario || !token) {
+      this.authErro = 'Faca login para avaliar.';
+      return;
+    }
+
+    if (this.avaliacaoForm.invalid) {
+      this.avaliacaoForm.markAllAsTouched();
+      return;
+    }
+
+    const payload: Avaliacao = {
+      pratoId: prato.id,
+      nota: this.avaliacaoForm.getRawValue().nota,
+      comentario: this.avaliacaoForm.getRawValue().comentario,
+      autor: this.usuario.nome
+    };
+
+    this.enviandoAvaliacao = true;
+    this.mensagem = '';
+    this.erro = '';
+
+    this.avaliacoesService
+      .criar(payload, token)
+      .pipe(finalize(() => (this.enviandoAvaliacao = false)))
+      .subscribe({
+        next: () => {
+          this.mensagem = 'Avaliacao enviada com sucesso.';
+          this.pratoEmAvaliacaoId = null;
+          this.avaliacaoForm.reset({
+            nota: 5,
+            comentario: ''
+          });
+          this.carregarAvaliacoes();
+        },
+        error: () => {
+          this.erro = 'Nao foi possivel enviar a avaliacao.';
+        }
+      });
   }
 
   get podeAvaliar(): boolean {
@@ -295,5 +449,38 @@ export class AppComponent {
   campoCadastroInvalido(nomeCampo: 'nome' | 'email' | 'senha'): boolean {
     const campo = this.cadastroForm.controls[nomeCampo];
     return campo.invalid && (campo.dirty || campo.touched);
+  }
+
+  campoAvaliacaoInvalido(nomeCampo: 'nota' | 'comentario'): boolean {
+    const campo = this.avaliacaoForm.controls[nomeCampo];
+    return campo.invalid && (campo.dirty || campo.touched);
+  }
+
+  campoCompraInvalido(): boolean {
+    const campo = this.compraForm.controls.quantidade;
+    return campo.invalid && (campo.dirty || campo.touched);
+  }
+
+  carregarHistoricoCompras(): void {
+    const token = this.authService.tokenAtual();
+    if (!token) {
+      this.authErro = 'Faca login para ver o historico de compras.';
+      return;
+    }
+
+    this.carregandoHistorico = true;
+    this.erro = '';
+
+    this.comprasService
+      .listarMinhas(token)
+      .pipe(finalize(() => (this.carregandoHistorico = false)))
+      .subscribe({
+        next: (compras) => {
+          this.historicoCompras = compras;
+        },
+        error: () => {
+          this.erro = 'Nao foi possivel carregar o historico de compras.';
+        }
+      });
   }
 }

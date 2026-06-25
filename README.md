@@ -13,6 +13,7 @@ Projeto pratico para a disciplina de Sistemas Distribuidos com foco em:
 |-- auth-service
 |-- avaliacoes-service
 |-- cardapio-service
+|-- compras-service
 |-- restaurante-frontend
 `-- docker-compose.yml
 ```
@@ -44,6 +45,7 @@ O frontend ficara disponivel em `http://localhost:4200`.
 - `POST http://localhost:8083/api/auth/register`
 - `POST http://localhost:8083/api/auth/login`
 - `GET http://localhost:8083/api/auth/validate`
+- `POST http://localhost:8084/api/compras`
 
 ## Bancos de dados
 
@@ -52,6 +54,7 @@ Cada microsservico que persiste dados usa seu proprio PostgreSQL:
 - `cardapio-service` -> `postgres-cardapio`
 - `avaliacoes-service` -> `postgres-avaliacoes`
 - `auth-service` -> `postgres-auth`
+- `compras-service` -> `postgres-compras`
 
 Isso evita acoplamento entre os dados dos servicos. Se `auth-service` cair, o cardapio continua publico. Se `avaliacoes-service` cair, a listagem do cardapio continua funcionando.
 
@@ -68,29 +71,38 @@ senha: 1234
 
 4. Cadastre um prato novo pela interface Angular.
 5. Envie uma avaliacao para o prato logado como usuario autenticado.
-6. Edite e exclua pratos para demonstrar o CRUD completo.
-7. Pare o microsservico de avaliacoes:
+6. Registre uma compra simples em um prato logado como usuario autenticado.
+7. Edite e exclua pratos para demonstrar o CRUD completo.
+8. Pare o microsservico de compras:
+
+```bash
+docker stop compras-service
+```
+
+9. Mostre que somente a compra falha, mas cardapio, login e avaliacoes continuam.
+10. Pare o microsservico de avaliacoes:
 
 ```bash
 docker stop avaliacoes-service
 ```
 
-8. Atualize a tela do frontend.
-9. Mostre que a lista de pratos continua visivel.
-10. Mostre que o CRUD principal continua funcionando normalmente.
-11. Mostre que o espaco de notas exibe `Avaliacoes indisponiveis`.
-12. Derrube tambem o servico de autenticacao:
+11. Atualize a tela do frontend.
+12. Mostre que a lista de pratos continua visivel.
+13. Mostre que o CRUD principal continua funcionando normalmente.
+14. Mostre que o espaco de notas exibe `Avaliacoes indisponiveis`.
+15. Derrube tambem o servico de autenticacao:
 
 ```bash
 docker stop auth-service
 ```
 
-13. Mostre que o cardapio continua publico e acessivel mesmo sem login.
-14. Mostre que apenas o bloco de login/cadastro fica indisponivel.
+16. Mostre que o cardapio continua publico e acessivel mesmo sem login.
+17. Mostre que apenas o bloco de login/cadastro, compras e acoes autenticadas ficam indisponiveis.
 
 ## Observacoes tecnicas
 
 - O `cardapio-service` usa PostgreSQL via Docker.
 - O `avaliacoes-service` usa PostgreSQL proprio e exige token valido no `POST` de avaliacao.
 - O `auth-service` usa PostgreSQL proprio, sobe com um usuario base e emite token no login.
+- O `compras-service` usa PostgreSQL proprio e exige token valido no `POST` de compra.
 - O frontend usa `catchError` com RxJS para degradacao graciosa quando o servico de avaliacoes ou autenticacao falha.

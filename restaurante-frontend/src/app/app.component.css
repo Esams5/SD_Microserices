@@ -92,6 +92,27 @@ h1 {
   max-width: 620px;
 }
 
+.table-wrapper {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.history-table th,
+.history-table td {
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(148, 96, 54, 0.14);
+  text-align: left;
+}
+
+.history-table th {
+  color: #7c2d12;
+  font-size: 0.92rem;
+}
+
 .panel-header {
   display: flex;
   gap: 16px;
@@ -205,6 +226,55 @@ button:disabled {
   background: linear-gradient(180deg, #fffdfa 0%, #fff4e8 100%);
   border: 1px solid rgba(168, 85, 247, 0.04);
   box-shadow: 0 12px 28px rgba(102, 65, 37, 0.08);
+}
+
+.reviews {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.review-item {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(124, 45, 18, 0.06);
+}
+
+.review-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.review-item p {
+  margin: 8px 0 0;
+}
+
+.review-empty {
+  margin-bottom: 16px;
+  color: #7c2d12;
+  font-size: 0.95rem;
+}
+
+.review-form {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 248, 239, 0.9);
+  border: 1px solid rgba(148, 96, 54, 0.14);
+}
+
+.purchase-form {
+  margin-bottom: 16px;
+  padding: 16px;
+  border-radius: 16px;
+  background: rgba(255, 250, 240, 0.95);
+  border: 1px solid rgba(148, 96, 54, 0.14);
+}
+
+.purchase-summary {
+  color: #7c2d12;
+  font-weight: 600;
 }
 
 .card-top {

@@ -7,6 +7,7 @@
     <div class="hero-actions">
       <div class="hero-auth" *ngIf="usuario; else authButtons">
         <span class="session-pill">Logado como {{ usuario.nome }}</span>
+        <button type="button" class="ghost-button" (click)="abrirPainel('historico')">Historico de compras</button>
         <button type="button" class="ghost-button" (click)="logout()">Sair</button>
       </div>
 
@@ -40,9 +41,11 @@
         <h2 *ngIf="painelAberto === 'login'">Login</h2>
         <h2 *ngIf="painelAberto === 'cadastro'">Cadastro</h2>
         <h2 *ngIf="painelAberto === 'prato'">{{ editandoId ? 'Editar prato' : 'Novo prato' }}</h2>
+        <h2 *ngIf="painelAberto === 'historico'">Historico de compras</h2>
         <p *ngIf="painelAberto === 'login'">Use o usuario base ou entre com sua conta.</p>
         <p *ngIf="painelAberto === 'cadastro'">Crie uma conta para liberar o gerenciamento.</p>
         <p *ngIf="painelAberto === 'prato'">Somente usuarios logados podem gerenciar pratos.</p>
+        <p *ngIf="painelAberto === 'historico'">Compras registradas para o usuario autenticado.</p>
       </div>
       <button type="button" class="ghost-button" (click)="fecharPainel()">Fechar</button>
     </div>
@@ -114,6 +117,37 @@
         </button>
       </div>
     </form>
+
+    <div *ngIf="painelAberto === 'historico'">
+      <p *ngIf="carregandoHistorico" class="feedback">Carregando historico...</p>
+
+      <div class="table-wrapper" *ngIf="!carregandoHistorico && historicoCompras.length > 0">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Prato</th>
+              <th>Qtd.</th>
+              <th>Unitario</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let compra of historicoCompras">
+              <td>{{ compra.id }}</td>
+              <td>{{ compra.pratoNome }}</td>
+              <td>{{ compra.quantidade }}</td>
+              <td>{{ compra.precoUnitario | currency:'BRL':'symbol':'1.2-2' }}</td>
+              <td>{{ compra.valorTotal | currency:'BRL':'symbol':'1.2-2' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p *ngIf="!carregandoHistorico && historicoCompras.length === 0" class="feedback">
+        Nenhuma compra registrada para este usuario.
+      </p>
+    </div>
   </section>
 
   <section class="panel">
@@ -142,8 +176,69 @@
           <strong>{{ prato.avaliacaoTexto }}</strong>
         </div>
 
+        <div class="reviews" *ngIf="prato.avaliacaoDisponivel && prato.avaliacoes?.length">
+          <div class="review-item" *ngFor="let avaliacao of prato.avaliacoes">
+            <div class="review-head">
+              <strong>{{ avaliacao.autor }}</strong>
+              <span>{{ avaliacao.nota }}/5</span>
+            </div>
+            <p>{{ avaliacao.comentario }}</p>
+          </div>
+        </div>
+
+        <div class="review-empty" *ngIf="prato.avaliacaoDisponivel && !prato.avaliacoes?.length">
+          Ainda nao ha comentarios para este prato.
+        </div>
+
+        <div class="review-form" *ngIf="usuario && pratoEmAvaliacaoId === prato.id">
+          <form [formGroup]="avaliacaoForm" (ngSubmit)="enviarAvaliacao(prato)" class="single-form">
+            <label>
+              <span>Nota</span>
+              <input type="number" min="1" max="5" formControlName="nota" />
+              <small *ngIf="campoAvaliacaoInvalido('nota')">Informe uma nota de 1 a 5.</small>
+            </label>
+
+            <label>
+              <span>Comentario</span>
+              <textarea rows="3" formControlName="comentario" placeholder="Conte como foi a experiencia"></textarea>
+              <small *ngIf="campoAvaliacaoInvalido('comentario')">Escreva um comentario valido.</small>
+            </label>
+
+            <div class="form-actions">
+              <button type="submit" [disabled]="enviandoAvaliacao">
+                {{ enviandoAvaliacao ? 'Enviando...' : 'Enviar avaliacao' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <div class="purchase-form" *ngIf="usuario && pratoEmCompraId === prato.id">
+          <form [formGroup]="compraForm" (ngSubmit)="comprar(prato)" class="single-form">
+            <label>
+              <span>Quantidade</span>
+              <input type="number" min="1" formControlName="quantidade" />
+              <small *ngIf="campoCompraInvalido()">Informe uma quantidade valida.</small>
+            </label>
+
+            <div class="purchase-summary">
+              Total:
+              <strong>
+                {{ (prato.preco * compraForm.getRawValue().quantidade) | currency:'BRL':'symbol':'1.2-2' }}
+              </strong>
+            </div>
+
+            <div class="form-actions">
+              <button type="submit" [disabled]="enviandoCompra">
+                {{ enviandoCompra ? 'Comprando...' : 'Confirmar compra' }}
+              </button>
+            </div>
+          </form>
+        </div>
+
         <div class="card-actions" *ngIf="gerenciamentoDisponivel">
+          <button type="button" class="ghost-button" (click)="abrirCompra(prato.id)">Comprar</button>
           <button type="button" (click)="editar(prato)">Editar</button>
+          <button type="button" class="ghost-button" (click)="abrirAvaliacao(prato.id)">Avaliar</button>
           <button type="button" class="danger" (click)="excluir(prato)">Excluir</button>
         </div>
       </article>
