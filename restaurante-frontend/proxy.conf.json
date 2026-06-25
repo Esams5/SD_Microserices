@@ -1,0 +1,14 @@
+{
+  "/api": {
+    "target": "http://localhost:8081",
+    "secure": false,
+    "changeOrigin": true,
+    "logLevel": "info",
+    "router": {
+      "/api/pratos": "http://localhost:8081",
+      "/api/avaliacoes": "http://localhost:8082",
+      "/api/auth": "http://localhost:8083",
+      "/api/compras": "http://localhost:8084"
+    }
+  }
+}

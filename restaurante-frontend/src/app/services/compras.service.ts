@@ -8,7 +8,7 @@ import { CompraHistorico, CompraRequest } from '../models/compra.model';
 })
 export class ComprasService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8084/api/compras';
+  private readonly apiUrl = '/api/compras';
 
   criar(compra: CompraRequest, token: string): Observable<void> {
     return this.http.post<void>(this.apiUrl, compra, {

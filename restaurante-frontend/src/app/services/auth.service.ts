@@ -8,7 +8,7 @@ import { LoginRequest, RegisterRequest, UsuarioAutenticado } from '../models/aut
 })
 export class AuthService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8083/api/auth';
+  private readonly apiUrl = '/api/auth';
   private readonly storageKey = 'restaurante.usuario';
   private readonly tokenKey = 'restaurante.token';
 

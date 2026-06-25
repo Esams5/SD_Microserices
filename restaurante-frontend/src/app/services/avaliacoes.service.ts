@@ -8,7 +8,7 @@ import { Avaliacao, AvaliacaoDetalhe, AvaliacaoResumo } from '../models/avaliaca
 })
 export class AvaliacoesService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8082/api/avaliacoes';
+  private readonly apiUrl = '/api/avaliacoes';
 
   buscarResumo(pratoId: number): Observable<AvaliacaoResumo> {
     return this.http.get<Avaliacao[]>(`${this.apiUrl}/${pratoId}`).pipe(

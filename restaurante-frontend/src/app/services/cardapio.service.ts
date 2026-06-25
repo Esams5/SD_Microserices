@@ -8,7 +8,7 @@ import { Prato } from '../models/prato.model';
 })
 export class CardapioService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8081/api/pratos';
+  private readonly apiUrl = '/api/pratos';
 
   listar(): Observable<Prato[]> {
     return this.http.get<Prato[]>(this.apiUrl);
@@ -26,4 +26,3 @@ export class CardapioService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 }
-

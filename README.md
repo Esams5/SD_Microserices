@@ -18,33 +18,75 @@ Projeto pratico para a disciplina de Sistemas Distribuidos com foco em:
 `-- docker-compose.yml
 ```
 
-## Subir o backend
+## Subir tudo com Docker
 
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
-## Rodar o frontend
+Servicos expostos:
+
+- Frontend: `http://localhost:4200`
+- Cardapio: `http://localhost:8081`
+- Avaliacoes: `http://localhost:8082`
+- Auth: `http://localhost:8083`
+- Compras: `http://localhost:8084`
+
+Para parar tudo:
+
+```bash
+docker compose down
+```
+
+Para parar e remover tambem os volumes dos bancos:
+
+```bash
+docker compose down -v
+```
+
+## Rodar o frontend fora do Docker
+
+Se quiser desenvolver o Angular localmente, o projeto ja vem com proxy para os microsservicos:
 
 ```bash
 cd restaurante-frontend
 npm install
-ng serve
+npm start
 ```
 
-O frontend ficara disponivel em `http://localhost:4200`.
+O frontend ficara disponivel em `http://localhost:4200` e as chamadas `/api/*` serao encaminhadas para os servicos backend corretos.
+
+## Como o frontend foi dockerizado
+
+- O `restaurante-frontend` usa um `Dockerfile` multi-stage.
+- A etapa de build gera o Angular com `npm run build`.
+- A imagem final usa `nginx:alpine` para servir os arquivos estaticos.
+- O `nginx` faz proxy de:
+  - `/api/pratos` -> `cardapio-service:8081`
+  - `/api/avaliacoes` -> `avaliacoes-service:8082`
+  - `/api/auth` -> `auth-service:8083`
+  - `/api/compras` -> `compras-service:8084`
+
+Assim o navegador fala sempre com `http://localhost:4200`, e o container do frontend resolve os servicos internos via Docker Compose.
 
 ## Endpoints principais
 
+- `GET /api/pratos`
+- `POST /api/pratos`
+- `PUT /api/pratos/{id}`
+- `DELETE /api/pratos/{id}`
+- `GET /api/avaliacoes/{pratoId}`
+- `POST /api/avaliacoes`
+- `POST /api/auth/register`
+- `POST /api/auth/login`
+- `GET /api/auth/validate`
+- `POST /api/compras`
+
+Se quiser chamar direto sem passar pelo frontend:
+
 - `GET http://localhost:8081/api/pratos`
-- `POST http://localhost:8081/api/pratos`
-- `PUT http://localhost:8081/api/pratos/{id}`
-- `DELETE http://localhost:8081/api/pratos/{id}`
 - `GET http://localhost:8082/api/avaliacoes/{pratoId}`
-- `POST http://localhost:8082/api/avaliacoes`
-- `POST http://localhost:8083/api/auth/register`
 - `POST http://localhost:8083/api/auth/login`
-- `GET http://localhost:8083/api/auth/validate`
 - `POST http://localhost:8084/api/compras`
 
 ## Bancos de dados
@@ -60,8 +102,8 @@ Isso evita acoplamento entre os dados dos servicos. Se `auth-service` cair, o ca
 
 ## Roteiro da demonstracao
 
-1. Suba o backend com `docker-compose up -d --build`.
-2. Rode o frontend com `ng start`.
+1. Suba tudo com `docker compose up -d --build`.
+2. Abra `http://localhost:4200`.
 3. Faça login com o usuario base:
 
 ```text
@@ -69,7 +111,7 @@ email: admin@restaurante.com
 senha: 1234
 ```
 
-4. Cadastre um prato novo pela interface Angular.
+4. Cadastre um prato novo pela interface.
 5. Envie uma avaliacao para o prato logado como usuario autenticado.
 6. Registre uma compra simples em um prato logado como usuario autenticado.
 7. Edite e exclua pratos para demonstrar o CRUD completo.
@@ -97,7 +139,7 @@ docker stop auth-service
 ```
 
 16. Mostre que o cardapio continua publico e acessivel mesmo sem login.
-17. Mostre que apenas o bloco de login/cadastro, compras e acoes autenticadas ficam indisponiveis.
+17. Mostre que apenas login/cadastro, compras e acoes autenticadas ficam indisponiveis.
 
 ## Observacoes tecnicas
 
@@ -105,4 +147,4 @@ docker stop auth-service
 - O `avaliacoes-service` usa PostgreSQL proprio e exige token valido no `POST` de avaliacao.
 - O `auth-service` usa PostgreSQL proprio, sobe com um usuario base e emite token no login.
 - O `compras-service` usa PostgreSQL proprio e exige token valido no `POST` de compra.
-- O frontend usa `catchError` com RxJS para degradacao graciosa quando o servico de avaliacoes ou autenticacao falha.
+- O frontend usa caminhos relativos `/api/*`, proxy no `ng serve` e proxy no `nginx` para funcionar igual em desenvolvimento e em Docker.

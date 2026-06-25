@@ -137,6 +137,22 @@ services:
       auth-service:
         condition: service_started
 
+  restaurante-frontend:
+    build:
+      context: ./restaurante-frontend
+    container_name: restaurante-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      cardapio-service:
+        condition: service_started
+      avaliacoes-service:
+        condition: service_started
+      auth-service:
+        condition: service_started
+      compras-service:
+        condition: service_started
+
 volumes:
   postgres_cardapio_data:
   postgres_avaliacoes_data:

@@ -24,7 +24,8 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "buildTarget": "restaurante-frontend:build"
+            "buildTarget": "restaurante-frontend:build",
+            "proxyConfig": "proxy.conf.json"
           }
         }
       }
@@ -34,4 +35,3 @@
     "analytics": "52ac8173-ce4b-4851-bd8c-4e94328d82a0"
   }
 }
-
