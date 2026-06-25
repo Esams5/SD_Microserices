@@ -13,5 +13,6 @@ export interface UsuarioAutenticado {
   id: number;
   nome: string;
   email: string;
+  token: string | null;
   mensagem: string;
 }

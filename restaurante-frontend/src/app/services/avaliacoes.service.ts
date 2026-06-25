@@ -1,5 +1,5 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { catchError, map, Observable, of } from 'rxjs';
 import { Avaliacao, AvaliacaoDetalhe, AvaliacaoResumo } from '../models/avaliacao.model';
 
@@ -43,7 +43,11 @@ export class AvaliacoesService {
     );
   }
 
-  criar(avaliacao: Avaliacao): Observable<AvaliacaoDetalhe> {
-    return this.http.post<AvaliacaoDetalhe>(this.apiUrl, avaliacao);
+  criar(avaliacao: Avaliacao, token: string): Observable<AvaliacaoDetalhe> {
+    return this.http.post<AvaliacaoDetalhe>(this.apiUrl, avaliacao, {
+      headers: new HttpHeaders({
+        Authorization: `Bearer ${token}`
+      })
+    });
   }
 }

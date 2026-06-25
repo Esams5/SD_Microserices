@@ -43,6 +43,17 @@ O frontend ficara disponivel em `http://localhost:4200`.
 - `POST http://localhost:8082/api/avaliacoes`
 - `POST http://localhost:8083/api/auth/register`
 - `POST http://localhost:8083/api/auth/login`
+- `GET http://localhost:8083/api/auth/validate`
+
+## Bancos de dados
+
+Cada microsservico que persiste dados usa seu proprio PostgreSQL:
+
+- `cardapio-service` -> `postgres-cardapio`
+- `avaliacoes-service` -> `postgres-avaliacoes`
+- `auth-service` -> `postgres-auth`
+
+Isso evita acoplamento entre os dados dos servicos. Se `auth-service` cair, o cardapio continua publico. Se `avaliacoes-service` cair, a listagem do cardapio continua funcionando.
 
 ## Roteiro da demonstracao
 
@@ -80,6 +91,6 @@ docker stop auth-service
 ## Observacoes tecnicas
 
 - O `cardapio-service` usa PostgreSQL via Docker.
-- O `avaliacoes-service` usa H2 em memoria para simplificar a infraestrutura.
-- O `auth-service` usa H2 em memoria e ja sobe com um usuario base.
+- O `avaliacoes-service` usa PostgreSQL proprio e exige token valido no `POST` de avaliacao.
+- O `auth-service` usa PostgreSQL proprio, sobe com um usuario base e emite token no login.
 - O frontend usa `catchError` com RxJS para degradacao graciosa quando o servico de avaliacoes ou autenticacao falha.

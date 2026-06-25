@@ -269,6 +269,10 @@ export class AppComponent {
     this.authMensagem = 'Sessao encerrada.';
   }
 
+  get podeAvaliar(): boolean {
+    return !!this.usuario && !!this.authService.tokenAtual();
+  }
+
   cancelarEdicao(): void {
     this.editandoId = null;
     this.pratoForm.reset({
